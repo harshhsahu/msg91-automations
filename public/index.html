@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MSG91 Test Panel</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1b1f24;--mut:#667085;--bd:#e4e7ec;--pass:#12805c;--fail:#c4321c;--wait:#b26a00;--acc:#2f5bea}
+@media(prefers-color-scheme:dark){:root{--bg:#14161a;--card:#1c1f24;--tx:#e8eaed;--mut:#98a2b3;--bd:#2c3038;--pass:#4cc38a;--fail:#ff7b66;--wait:#f0b050;--acc:#7b9bff}}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.side{background:var(--card);border-right:1px solid var(--bd);padding:18px 12px;position:sticky;top:0;height:100vh}
+.side h1{font-size:18px;margin:0 8px 24px}.side button{display:block;width:100%;text-align:left;font-size:15px;padding:10px 12px;margin-bottom:4px;border:0;background:none;color:var(--tx);border-radius:8px;cursor:pointer}
+.side button.on{background:var(--acc);color:#fff}
+.page{min-width:0}
+.top{display:flex;gap:10px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--bd);background:var(--card);flex-wrap:wrap}
+.top .sp{flex:1}.chip{border:1px solid var(--bd);border-radius:999px;padding:3px 12px;font-size:14px;color:var(--mut);white-space:nowrap}.chip b{color:var(--tx)}
+.envs button{font-size:14px;padding:5px 14px;border:1px solid var(--bd);background:none;color:var(--tx);cursor:pointer}.envs button:first-child{border-radius:6px 0 0 6px}.envs button:last-child{border-radius:0 6px 6px 0}.envs .on{background:var(--acc);color:#fff;border-color:var(--acc)}.envs .off{opacity:.45}
+.wrap{padding:20px;max-width:1500px;margin:auto}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;position:relative}
+.seg button{font-size:14px;padding:7px 16px;border:1px solid var(--bd);background:none;color:var(--tx);cursor:pointer}.seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}.seg .on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.tiles{display:grid;grid-template-columns:repeat(10,minmax(96px,1fr));gap:8px;margin:14px -3px 14px;overflow-x:auto;padding:6px 3px 6px}
+.tile{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;min-width:0;cursor:pointer;text-align:left;color:var(--tx);font:inherit;transition:border-color .12s,transform .12s}
+.tile:hover:not(:disabled){border-color:var(--acc);transform:translateY(-1px)}.tile:disabled{opacity:.5;cursor:default}
+.tile .ic{width:52px;height:52px;border-radius:12px;overflow:hidden;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:34px}.tile .ic img{width:100%;height:100%;display:block}
+.tile b{display:block;font-size:14px}.tile small{color:var(--mut);font-size:12px}.tile .tc{font-size:13px;margin-top:4px;min-height:19px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:18px}
+h2{font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+label{display:block;margin:8px 0 3px;color:var(--mut);font-size:14px}select{font:inherit;font-size:14px;height:36px;padding:0 10px;max-width:100%;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx);cursor:pointer}
+button.pri{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:9px 18px;font-size:15px;cursor:pointer}button.pri:disabled{opacity:.5}
+button.sm{height:36px;font-size:14px;border:1px solid var(--bd);background:none;color:var(--tx);border-radius:6px;padding:6px 12px;cursor:pointer}
+table{width:auto;max-width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd);vertical-align:top}th{color:var(--mut);font-weight:600;font-size:13px}
+.b{display:inline-block;padding:1px 11px;border-radius:12px;font-size:14px;font-weight:600;border:1px solid currentColor}
+.PASS{color:var(--pass)}.FAIL,.ERROR{color:var(--fail)}.WAITING,.PENDING{color:var(--wait)}
+.sum span{margin-right:20px;font-size:17px}pre{overscroll-behavior:contain;background:var(--bg);padding:8px;border-radius:6px;overflow:auto;max-height:320px;font-size:13px}
+.chk{max-height:200px;overflow:auto;border:1px solid var(--bd);border-radius:6px;padding:6px 10px}.chk label{display:flex;gap:8px;align-items:center;margin:4px 0;color:var(--tx);font-size:14px}.lnk{background:none;border:0;color:var(--acc);cursor:pointer;font-size:13px;padding:0 6px}.wide{overflow:auto}
+td.mono{font-family:ui-monospace,monospace;font-size:13px;word-break:break-all;max-width:260px}td.nw,td.nw.mono{white-space:nowrap;word-break:normal}td.reason{max-width:380px}.d pre{white-space:pre-wrap;word-break:break-word;max-width:min(1000px,80vw)}.diff{width:auto;min-width:50%}.diff td{padding:5px 12px}.diff td.bad{color:var(--fail)}.err{color:var(--fail);margin:8px 0}.row{cursor:pointer}.mut{color:var(--mut)}
+details.acc{border:1px solid var(--bd);border-radius:8px;margin:12px 0 22px;background:var(--card)}
+details.acc>summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:center}
+details.acc>summary::before{content:'▸';transition:transform .15s}details.acc[open]>summary::before{transform:rotate(90deg)}
+details.acc>.accbody{padding:4px 14px 12px}
+.prog{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin:8px 0}.prog i{display:block;height:100%;background:var(--acc);transition:width .4s}
+.hist{position:fixed;right:0;top:0;bottom:0;width:380px;max-width:92vw;overflow:auto;background:var(--card);border-left:1px solid var(--bd);box-shadow:-8px 0 24px rgba(0,0,0,.15);padding:14px 18px;z-index:20;transform:translateX(105%);transition:transform .2s}.hist.open{transform:none}.hist h3{margin:0 0 8px;display:flex;justify-content:space-between;align-items:center;font-size:16px}.ib{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--bd);border-radius:50%;background:var(--card);color:var(--tx);font-size:18px;cursor:pointer}
+.hist .row{padding:8px 0;border-bottom:1px solid var(--bd)}
+.menu{position:relative;display:inline-block}.menu .pop{display:none;position:absolute;right:0;top:42px;min-width:170px;background:var(--card);border:1px solid var(--bd);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:4px;z-index:6}.menu.open .pop{display:block}.menu .pop button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--tx);font:inherit;font-size:14px;padding:8px 12px;border-radius:6px;cursor:pointer}.menu .pop button:hover{background:var(--bg)}
+.soon{padding:40px;text-align:center;color:var(--mut)}
+@media(max-width:800px){.app{grid-template-columns:1fr}.side{position:static;height:auto;display:flex;gap:6px;align-items:center}.side h1{display:none}}
+</style></head><body>
+<div class="app">
+<aside class="side"><h1><img src="/icons/msg91.svg" alt="MSG91" style="height:44px;background:#fff;border-radius:8px;padding:4px 10px"><br><span style="display:block;margin-top:8px;font-size:22px;font-weight:700">Test Panel</span></h1><div id="nav"><button class="on" data-v="webhook">Webhook Testing</button><button data-v="load">Load Testing</button></div></aside>
+<div class="page">
+<header class="top"><div class="envs" id="tabs"></div><span class="sp"></span><span class="chip" id="cinfo"></span></header>
+<div id="vsbanner" class="card" style="display:none;margin:16px 20px 0;border-color:var(--wait)"></div>
+<aside class="hist" id="histp"><h3>Run history <button class="sm" id="histx">✕</button></h3><div id="hist"></div></aside>
+<div class="wrap" id="view-webhook">
+ <div class="bar">
+  <div class="seg" id="modeseg"><button data-m="dry" class="on">Dry run</button><button data-m="live">Live</button></div>
+  <button class="pri" id="runall">Run all services</button>
+  <span class="mut" id="modehint"></span>
+  <span style="flex:1"></span>
+  <span class="menu" id="expm"><button class="ib" id="expb" title="Download report" aria-label="Download report"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></button><div class="pop"><button data-f="xlsx">Excel (.xlsx)</button><button data-f="csv">CSV</button><button data-f="json">JSON</button></div></span> <button class="ib" id="histbtn" title="Run history" aria-label="Run history"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></button>
+ </div>
+ <div class="err" id="err"></div>
+ <div class="card mut" id="nocfg" style="display:none"></div>
+ <div class="tiles" id="tiles"></div>
+ <details class="acc" id="custom"><summary>Customize (pick templates and events)</summary><div class="accbody">
+  <label>Service</label><select id="svc"></select>
+  <label>Templates <b id="tpcount" class="mut"></b> <button class="lnk" id="tpall">all</button><button class="lnk" id="tpnone">none</button></label><div class="chk" id="tps"></div>
+  <label>Events <b id="evcount" class="mut"></b> <button class="lnk" id="evall">all</button><button class="lnk" id="evnone">none</button></label><div class="chk" id="evs"></div>
+  <label>Run data: variable values to send in dry run (JSON, optional, e.g. {"mobiles":"919999999999"})</label><textarea id="ovr" rows="3" style="width:100%;font:13px ui-monospace,monospace;padding:6px" placeholder="{}"></textarea>
+  <div class="mut" id="count" style="margin:8px 0"></div><button class="pri" id="start">Run selection</button>
+  <div class="wide" style="max-height:260px;margin-top:12px"><table><thead><tr><th>Service</th><th>Event</th><th>Event name</th><th>Template</th></tr></thead><tbody id="combo"></tbody></table></div>
+ </div></details>
+ <div class="card"><h2>Results <span id="rid" class="mut"></span></h2>
+  <div id="progw" style="display:none"><div id="progt"></div><div class="prog"><i id="progb" style="width:0"></i></div></div>
+  <div class="sum" id="sum"></div>
+  <div style="margin:10px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><select id="fstat"><option value="">All statuses</option><option>PASS</option><option>FAIL</option><option>ERROR</option><option>WAITING</option></select> <select id="fsvc"><option value="">All services</option></select>
+   </div>
+  <div class="wide"><table><thead><tr><th>Date</th><th>Request Id</th><th>Webhook Id</th><th>Webhook Name</th><th>Service</th><th>Event</th><th>Template</th><th>Status</th><th>Failure Reason</th><th>Snapshot</th></tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="mut" id="noruns" style="padding:14px 0">Click a service above to test all of its templates and events, or use Run all services.</div>
+ </div>
+</div>
+<div class="wrap" id="view-load" style="display:none"><div class="card soon"><h2>Load Testing</h2>Coming soon. This area is reserved for load tests.</div></div>
+</div></div>
+<script>
+
+const $=id=>document.getElementById(id);let env='test',run=null,cases=[],envs=[],timer=null;
+const j=async(u,o)=>{const r=await fetch(u,o);const d=await r.json();if(!r.ok)throw new Error(d.error||r.status);return d};
+const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const key=c=>c.event+'|'+c.templateId;
+const checked=id=>[...$(id).querySelectorAll('input:checked')].map(i=>i.value);
+async function vsStatus(){try{const s=await j('/api/viasocket/status');0;const b=$('vsbanner');b.style.display=s.ready?'none':'block';b.innerHTML=s.ready?'':`<b>viaSocket receiver is not set up.</b> ${esc(s.reason||'')}<br>${s.configured?'<button class="sm" id="mkrec" style="margin-top:8px">Set up receiver</button>':'Update the viaSocket values in .env and restart.'}`;const m=$('mkrec');if(m)m.onclick=async()=>{m.disabled=true;m.textContent='Setting up…';try{await j('/api/viasocket/receiver',{method:'POST'})}catch(e){$('err').textContent=e.message}vsStatus()}}catch(e){}}
+async function init(){vsStatus();envs=await j('/api/envs');$('tabs').innerHTML=envs.map(e=>`<button class="${e.env==env?'on':''} ${e.ready?'':'off'}" data-e="${e.env}" title="${e.ready?e.baseUrl:'not configured in .env'}">${e.env}</button>`).join('');
+ document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{env=b.dataset.e;init()});
+ const cur=envs.find(e=>e.env==env);$('cinfo').innerHTML=cur.ready?`Company ID <b>${esc(cur.companyId)}</b>`:`<b>${esc(env)}</b> env not configured`;
+ $('runall').disabled=!cur.ready;$('custom').style.display=$('rid').closest('.card').style.display=cur.ready?'':'none';$('nocfg').style.display=cur.ready?'none':'block';$('nocfg').textContent=`${env.charAt(0).toUpperCase()+env.slice(1)} environment is not configured yet. It will be available once its details are added.`;
+ if(!cur.ready){cases=[];run=null;$('tiles').innerHTML='';$('rows').innerHTML='';$('sum').innerHTML='';$('err').textContent='';return}
+ await loadCases();await loadRuns();}
+async function loadCases(){$('err').textContent='';cases=[];$('svc').innerHTML='';$('evs').innerHTML='';$('tps').innerHTML='';$('combo').innerHTML='';
+ try{cases=(await j(`/api/${env}/cases`)).cases}catch(e){$('err').textContent=e.message;return}
+ const svcs=[...new Set(cases.map(c=>c.service))];
+ $('svc').innerHTML='<option value="">All services ('+svcs.length+')</option>'+svcs.map(s=>`<option value="${s}">${s} (${cases.filter(c=>c.service===s).length})</option>`).join('');
+ drawTpls();drawTiles()}
+const ICON={sms:'sms',otp:'otp',wa:'whatsapp',widget:'otp',mail:'email',voice:'voice',numbers:'numbers',notification:'push-notification',rcs:'rcs',telegram:'telegram'};   // MSG91 product icons from msg91.com/in (public/icons); telegram.svg is a generic Telegram plane drawn locally (MSG91 site has none)
+let mode='dry';
+function drawTiles(){const svcs=[...new Set(cases.map(c=>c.service))];const busy=run?.progress?.running;
+ $('tiles').innerHTML=svcs.map(s=>{const ic=ICON[s];const img=ic?`<img src="/icons/${ic}.svg" alt="">`:'✈️';const n=cases.filter(c=>c.service===s).length;const rc=(run?.cases||[]).filter(c=>c.service===s);const k={};rc.forEach(c=>k[c.status]=(k[c.status]||0)+1);
+  const tc=rc.length?['PASS','FAIL','ERROR','WAITING','PENDING'].filter(x=>k[x]).map(x=>`<span class="${x}">${k[x]} ${x.toLowerCase()}</span>`).join(' · '):'';
+  return `<button class="tile" data-s="${s}" ${busy?'disabled':''}><div class="ic">${img}</div><b>${s.toUpperCase()}</b><small>${n} combinations</small><div class="tc">${tc}</div></button>`}).join('');
+ document.querySelectorAll('.tile').forEach(t=>t.onclick=()=>go({services:[t.dataset.s]},cases.filter(c=>c.service===t.dataset.s).length));
+ if($('fsvc').options.length!==svcs.length+1){const v=$('fsvc').value;$('fsvc').innerHTML='<option value="">All services</option>'+svcs.map(s=>`<option>${s}</option>`).join('');$('fsvc').value=v}}
+const inSvc=()=>cases.filter(c=>!$('svc').value||c.service===$('svc').value);
+// order: service -> templates -> events. Templates come from the service; events come from the selected templates.
+function drawTpls(){const names=[...new Set(inSvc().map(c=>c.templateName))];
+ $('tps').innerHTML=names.map(n=>`<label><input type="checkbox" value="${esc(n)}" checked>${esc(n)}</label>`).join('');
+ $('tps').querySelectorAll('input').forEach(i=>i.onchange=()=>drawEvents(false));drawEvents(true)}
+function drawEvents(reset){const prev={};$('evs').querySelectorAll('input').forEach(i=>prev[i.value]=i.checked);
+ const tps=new Set(checked('tps'));const evs=[...new Map(inSvc().filter(c=>tps.has(c.templateName)).map(c=>[c.event,c])).values()];
+ $('evs').innerHTML=evs.map(c=>`<label><input type="checkbox" value="${c.event}" ${!reset&&prev[c.event]===false?'':'checked'}>${c.event}</label>`).join('');
+ $('evs').querySelectorAll('input').forEach(i=>i.onchange=drawCombo);drawCombo()}
+const picked=()=>{const evs=new Set(checked('evs')),tps=new Set(checked('tps'));return inSvc().filter(c=>evs.has(c.event)&&tps.has(c.templateName))};
+function drawCombo(){const p=picked();const nEv=$('evs').querySelectorAll('input').length,nTp=$('tps').querySelectorAll('input').length;$('evcount').textContent='('+checked('evs').length+' of '+nEv+' selected)';$('tpcount').textContent='('+checked('tps').length+' of '+nTp+' selected)';$('count').textContent=p.length+' combinations selected of '+cases.length;
+ $('combo').innerHTML=p.map(c=>`<tr><td>${c.service}</td><td class="mono">${c.event}</td><td>${esc(c.eventName||'')}</td><td>${esc(c.templateName)}</td></tr>`).join('')}
+$('svc').onchange=drawTpls;
+for(const [b,id,v] of [['evall','evs',1],['evnone','evs',0],['tpall','tps',1],['tpnone','tps',0]])$(b).onclick=()=>{$(id).querySelectorAll('input').forEach(i=>i.checked=!!v);id==='evs'?drawCombo():drawEvents(false)};
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));$('view-webhook').style.display=b.dataset.v==='webhook'?'':'none';$('view-load').style.display=b.dataset.v==='load'?'block':'none'});
+let ovrBad=false;function ovr(){const t=$('ovr').value.trim();ovrBad=false;if(!t)return {};try{const o=JSON.parse(t);if(o&&typeof o==='object'&&!Array.isArray(o))return o}catch{}ovrBad=true;return {}}
+async function go(body,n){$('err').textContent='';ovr();if(ovrBad){$('err').textContent='Run data must be a valid JSON object';return}if(run?.progress?.running){$('err').textContent='A run is in progress. Wait for it to finish.';return}
+ let confirmProd=false;if(env==='prod'){if(!confirm('Run '+n+' cases against PROD?'))return;confirmProd=true}
+ try{run=await j('/api/runs',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({env,mode,confirmProd,variableOverrides:ovr(),...body})});openIds.clear();cmpOpen.clear();show();loadRuns();poll()}catch(e){$('err').textContent=e.message}}
+$('start').onclick=()=>{const sel=picked().map(key);if(!sel.length){$('err').textContent='Select at least one combination';return}go({selection:sel},sel.length)};
+$('runall').onclick=()=>go({},cases.length);
+document.querySelectorAll('#modeseg button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('#modeseg button').forEach(x=>x.classList.toggle('on',x===b));hint()});
+const hint=()=>$('modehint').textContent=mode==='dry'?'Sends MSG91 sample data to the receiver (instant results, batched).':'Creates real webhooks; results arrive when a real event fires.';hint();
+const hp=o=>$('histp').classList.toggle('open',o);$('histbtn').onclick=e=>{e.stopPropagation();hp(true)};$('histx').onclick=()=>hp(false);document.addEventListener('click',e=>{if(!e.target.closest('#histp'))hp(false)});
+async function loadRuns(){const rs=await j('/api/runs');$('histbtn').title='Run history ('+rs.length+')';$('hist').innerHTML=rs.map(r=>`<div class="row" data-id="${r.id}"><b>${r.env}</b> ${r.mode} · ${esc(r.scope||'')}${r.running?' · <span class="WAITING">running</span>':''} <span class="mut">${new Date(r.startedAt).toLocaleString()}</span><br><span class="PASS">${r.counts.PASS||0}✓</span> <span class="FAIL">${(r.counts.FAIL||0)+(r.counts.ERROR||0)}✗</span> <span class="WAITING">${r.counts.WAITING||0}…</span> <span class="mut">of ${r.counts.total}</span></div>`).join('')||'<span class="mut">No runs yet</span>';
+ document.querySelectorAll('#hist .row').forEach(d=>d.onclick=async()=>{run=await j('/api/runs/'+d.dataset.id);openIds.clear();cmpOpen.clear();hp(false);show();poll()})}
+const fmtDate=d=>d?new Date(d).toLocaleString():'—';
+const openIds=new Set(),cmpOpen=new Set();   // remembered across the 20s auto-refresh so an open row never closes by itself
+function show(){if(!run)return;$('noruns').style.display='none';const pg=run.progress;$('progw').style.display=pg?.running?'block':'none';if(pg?.running){$('progt').textContent=`Running in batches: batch ${pg.batch}/${pg.batches} · ${pg.done} of ${pg.total} cases sent`;$('progb').style.width=Math.round(100*pg.done/pg.total)+'%'}drawTiles();$('rid').textContent=`${run.id} · ${run.env} · ${run.mode}`;const c={};run.cases.forEach(x=>c[x.status]=(c[x.status]||0)+1);
+ $('sum').innerHTML=`<span>Total <b>${run.cases.length}</b></span>`+['PASS','FAIL','ERROR','WAITING','PENDING'].filter(s=>c[s]).map(s=>`<span class="${s}">${s} <b>${c[s]}</b></span>`).join('');
+ const f=$('fstat').value,fs=$('fsvc').value;const sig=JSON.stringify([run.id,f,fs,openIds.size,run.cases.map(x=>[x.status,x.receivedAt,x.issues.length,x.retryCount,x.received!=null,x.webhookId])]);if(sig===show.last)return;show.last=sig;const sc={},wy=window.scrollY;document.querySelectorAll('#rows tr.d').forEach(d=>{const id=d.previousElementSibling?.dataset.c;if(id)sc[id]=[...d.querySelectorAll('pre')].map(p=>p.scrollTop)});$('rows').innerHTML=run.cases.filter(x=>(!f||x.status===f)&&(!fs||x.service===fs)).map(x=>`<tr class="row" data-c="${x.caseId}"><td class="nw">${fmtDate(x.receivedAt)}</td><td class="mono nw">${esc(x.requestId||x.vars?.requestId||x.caseId)}</td><td class="mono nw">${x.webhookId?esc(x.webhookId):`<span class="mut" title="${run.mode==='dry'?'Dry run does not create a webhook':'No webhook id returned'}">${run.mode==='dry'?'n/a (dry run)':'—'}</span>`}</td><td>${esc(x.webhookName||'')}</td><td class="nw"><b>${esc(x.service)}</b></td><td><b>${esc(x.eventName||x.event)}</b><div class="mut mono" style="max-width:none">${esc(x.event)}</div></td><td>${esc(x.templateName)}</td><td class="nw"><span class="b ${x.status}">${x.status}</span></td><td class="reason">${x.issues.length?esc(x.issues[0].message)+(x.issues.length>1?` (+${x.issues.length-1})`:''):'—'}</td><td class="nw"><button class="sm snap">${openIds.has(x.caseId)?'Hide':'View'}</button></td></tr>`).join('');
+ document.querySelectorAll('#rows tr.row').forEach(t=>{t.onclick=()=>toggleDetail(t);if(openIds.has(t.dataset.c)){buildDetail(t);const d=t.nextElementSibling;(sc[t.dataset.c]||[]).forEach((v,i)=>{const p=d.querySelectorAll('pre')[i];if(p)p.scrollTop=v})}});window.scrollTo(0,wy)}
+function toggleDetail(tr){const id=tr.dataset.c,nx=tr.nextElementSibling;
+ if(nx&&nx.className==='d'){nx.remove();openIds.delete(id);tr.querySelector('.snap').textContent='View';return}
+ openIds.add(id);buildDetail(tr);tr.querySelector('.snap').textContent='Hide'}
+function buildDetail(tr){const x=run.cases.find(c=>c.caseId===tr.dataset.c);if(!x)return;
+ const rows=(x.rows||[]).map(r=>`<tr><td class="${r.ok?'':r.soft?'WAITING':'bad'}">${esc(r.path)}</td><td>${esc(r.expected)}</td><td class="${r.ok?'':r.soft?'WAITING':'bad'}">${esc(r.received)}</td><td class="${r.soft?'WAITING':''}">${r.ok?'✓':r.soft?'⚠':'✗'}</td></tr>`).join('');
+ const none=x.note?esc(x.note):x.status==='ERROR'?'The request failed before any hit was sent. See Raw API responses above.':run.mode==='live'?'No data yet. A live webhook only receives data when a real event fires in MSG91.':'No data received yet. Click Collect results (viaSocket history can take about a minute).';
+ const warn=x.warnings||[];const verdict=x.issues.length?`<span class="FAIL">${x.issues.length} issue${x.issues.length>1?'s':''}</span>`:(warn.length?`<span class="WAITING">passed · ${warn.length} date value${warn.length>1?'s':''} differ (ignored in dry run)</span>`:rows?'<span class="PASS">all fields match</span>':'<span class="mut">no data to compare</span>');
+ const d=document.createElement('tr');d.className='d';
+ d.innerHTML=`<td colspan="10"><div class="mut">Case ${x.caseId}</div><h2 style="margin-top:10px">Raw API responses</h2><pre>${esc(JSON.stringify({sent:x.vars,dryRunResponse:x.dryRunResponse,createResponse:x.createResponse},null,2))}</pre><h2>Snapshot (webhook data received)</h2><pre>${x.received==null?none:esc(JSON.stringify(x.received,null,2))}</pre>
+ <details class="acc" ${cmpOpen.has(x.caseId)?'open':''}><summary>Comparison ${verdict}</summary><div class="accbody">${x.issues.map(i=>`<div class="FAIL">${esc(i.message)}</div>`).join('')||(rows&&!warn.length?'<div class="PASS">All fields match</div>':'')}${warn.map(i=>`<div class="WAITING">⚠ ${esc(i.message)}</div>`).join('')}${rows?`<table class="diff"><tr><th>Field</th><th>Expected</th><th>Received</th><th></th></tr>${rows}</table>`:''}</div></details></td>`;
+ d.querySelector('details').ontoggle=e=>{e.target.open?cmpOpen.add(x.caseId):cmpOpen.delete(x.caseId)};
+ tr.after(d)}
+async function refresh(){if(!run)return;try{run=await j(`/api/runs/${run.id}/collect`,{method:'POST'});show();loadRuns()}catch(e){$('err').textContent=e.message}}
+let tick=0;function poll(){clearInterval(timer);timer=setInterval(async()=>{if(!run)return;tick++;try{if(run.progress?.running){run=await j('/api/runs/'+run.id);show();if(!run.progress?.running)loadRuns()}else if(run.cases.some(c=>['WAITING','PENDING'].includes(c.status))&&tick%4===0)refresh()}catch{}},5000)}
+$('fstat').onchange=show;$('fsvc').onchange=show;
+const dl=(name,text,type)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()};
+const expCsv=()=>{if(!run)return;const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';dl(run.id+'.csv',['date,request_id,webhook_id,webhook_name,service,event,event_name,template,status,failure_reason,retry_count,snapshot_json',...run.cases.map(c=>[c.receivedAt,c.requestId||c.caseId,c.webhookId,c.webhookName,c.service,c.event,c.eventName,c.templateName,c.status,c.issues.map(i=>i.message).join('; '),c.retryCount,c.received==null?'':JSON.stringify(c.received)].map(q).join(','))].join('\n'),'text/csv')};
+const expJson=()=>{if(!run)return;dl(run.id+'-webhook-data.json',JSON.stringify(run.cases.map(c=>({service:c.service,event:c.event,eventName:c.eventName,template:c.templateName,rawApiResponses:{sent:c.vars,dryRunResponse:c.dryRunResponse,createResponse:c.createResponse},snapshot:c.received,status:c.status,issues:c.issues,expectedFormat:c.tplFmt})),null,2),'application/json')};
+init();
+$('expb').onclick=e=>{e.stopPropagation();$('expm').classList.toggle('open')};document.addEventListener('click',()=>$('expm').classList.remove('open'));
+document.querySelectorAll('#expm .pop button').forEach(b=>b.onclick=()=>{const v=b.dataset.f;if(!run)return;if(v==='xlsx')location.href=`/api/runs/${run.id}/export.xlsx`;else if(v==='csv')expCsv();else expJson()});
+</script></body></html>
